@@ -18,6 +18,9 @@ priceElemSales = soup.findAll("span", {"class": "price-sales"})
 title = titleElement[0].contents[0].strip() if len(titleElement) > 0 else False
 priceStandart = (int)(priceElemStandart[0].contents[0].strip()) if len(priceElemStandart) > 0 else False
 priceSales = (int)(priceElemSales[0].contents[0].strip()) if len(priceElemSales) > 0 else False
+if not priceStandart and priceSales > 0:
+    priceStandart = priceSales
+    priceSales = False
 # print title
 # print priceStandart
 # print priceSales
