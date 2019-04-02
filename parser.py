@@ -13,6 +13,7 @@ pageAddresses = [
 	'https://4lapy.ru/catalog/sobaki/Avva_Premium_suhoy_korm_dlya_sobak_krupnyh_porod_kuritsa.html?offer=45767',
 	'https://4lapy.ru/catalog/sobaki/Avva_Premium_Fresh_Meat_suhoy_korm_dlya_sobak_vseh_porodososris.html?offer=44103',
 	'https://4lapy.ru/catalog/sobaki/Avva_Premium_suhoy_korm_dlya_sobak_vseh_porod_yagnenokris.html?offer=45768',
+	'https://4lapy.ru/catalog/sobaki/korm-sobaki/sukhoy-korm-sobaki/Grandin_Fresh_Meat_suhoy_korm_dlya_sobak_melkih_porod_yagnenok.html?offer=81072',
 ]
 
 def checkPage(pageAddress):
@@ -44,21 +45,33 @@ def checkPage(pageAddress):
 	# Successfully found parentBlock
 	brandElement = parentBlock.findAll("span", {"itemprop": "brand"})
 	titleElement = parentBlock.findAll("h1", {"class": "b-title b-title--h1 b-title--card"})
-	priceElemStandart = parentBlock.findAll("span", {"class": "b-product-information__old-price"})
-	if not priceElemStandart:
-		priceElemStandart = parentBlock.findAll("span", {"class": "b-product-information__price"})
-		priceElemSales = False
+	priceElemStandart = soup.find("a", {"class": "b-weight-container__link js-price active-link"})
+	if priceElemStandart:
+		priceStandart = (int)(priceElemStandart["data-oldprice"])
+		priceSales = (int)(priceElemStandart["data-price"])
+
 	else:
-		priceElemSales = parentBlock.findAll("span", {"class": "b-product-information__price"})
+		priceElemStandart = soup.find("span", {"class": "b-advice__cost"})
+		if priceElemStandart:
+			priceStandart = (int)(priceElemStandart.contents[0].strip())
+			priceSales = False
+		else:
+			priceElemStandart = soup.findAll("meta", itemprop = "price")
+			if priceElemStandart and len(priceElemStandart) > 0:
+				prices = []
+				for elem in priceElemStandart:
+					prices.append((int)(elem["content"]))
+				prices.sort(reverse = True)
+				priceStandart = prices[0]
+				priceSales = False
+			else:
+				priceStandart = False
+				priceSales = False
+
 
 	title = titleElement[0].contents[0].strip() if len(titleElement) > 0 else False
 	if len(brandElement) > 0:
 		title = brandElement[0].contents[0].strip() + " " + title
-	priceStandart = (int)(priceElemStandart[0].contents[0].strip()) if len(priceElemStandart) > 0 else False
-	priceSales = (int)(priceElemSales[0].contents[0].strip()) if priceElemSales != False and len(priceElemSales) > 0 else False
-	if not priceStandart and priceSales > 0:
-	    priceStandart = priceSales
-	    priceSales = False
 
 	Notify.init("Prices")
 
